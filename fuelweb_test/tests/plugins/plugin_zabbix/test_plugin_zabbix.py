@@ -31,11 +31,12 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 
 class ZabbixWeb(object):
-    def __init__(self, public_vip, username, password):
+    def __init__(self, public_vip, username, password, verify=False):
         self.session = requests.Session()
-        self.base_url = "http://{0}/zabbix/".format(public_vip)
+        self.base_url = "https://{0}/zabbix/".format(public_vip)
         self.username = username
         self.password = password
+        self.verify = verify
 
     def login(self):
         login_params = urllib.urlencode({'request': '',
@@ -44,14 +45,14 @@ class ZabbixWeb(object):
                                          'autologin': 1,
                                          'enter': 'Sign in'})
         url = urlparse.urljoin(self.base_url, '?{0}'.format(login_params))
-        response = self.session.post(url)
+        response = self.session.post(url, verify=self.verify)
 
         assert_equal(response.status_code, 200,
                      "Login to Zabbix failed: {0}".format(response.content))
 
     def get_trigger_statuses(self):
         url = urlparse.urljoin(self.base_url, 'tr_status.php')
-        response = self.session.get(url)
+        response = self.session.get(url, verify=self.verify)
 
         assert_equal(response.status_code, 200,
                      "Getting Zabbix trigger statuses failed: {0}"
@@ -61,7 +62,7 @@ class ZabbixWeb(object):
 
     def get_screens(self):
         url = urlparse.urljoin(self.base_url, 'screens.php')
-        response = self.session.get(url)
+        response = self.session.get(url, verify=self.verify)
 
         assert_equal(response.status_code, 200,
                      "Getting Zabbix screens failed: {0}"
@@ -165,23 +166,17 @@ class ZabbixPlugin(TestBasic):
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")
-        checkers.upload_tarball(
-            self.env.d_env.get_admin_remote(), conf.ZABBIX_PLUGIN_PATH, "/var")
-        checkers.install_plugin_check_code(
-            self.env.d_env.get_admin_remote(),
-            plugin=os.path.basename(conf.ZABBIX_PLUGIN_PATH))
 
-        settings = None
-        if conf.NEUTRON_ENABLE:
-            settings = {
-                "net_provider": "neutron",
-                "net_segment_type": conf.NEUTRON_SEGMENT_TYPE
-            }
+        with self.env.d_env.get_admin_remote() as remote:
+            checkers.upload_tarball(
+                remote, conf.ZABBIX_PLUGIN_PATH, "/var")
+            checkers.install_plugin_check_code(
+                remote,
+                plugin=os.path.basename(conf.ZABBIX_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=conf.DEPLOYMENT_MODE,
-            settings=settings
         )
 
         zabbix_username = 'admin'
@@ -251,26 +246,18 @@ class ZabbixPlugin(TestBasic):
         """
         self.env.revert_snapshot("ready_with_5_slaves")
 
-        for plugin in [conf.ZABBIX_PLUGIN_PATH,
-                       conf.ZABBIX_SNMP_PLUGIN_PATH]:
-            checkers.upload_tarball(
-                self.env.d_env.get_admin_remote(), plugin, "/var")
-            checkers.install_plugin_check_code(
-                self.env.d_env.get_admin_remote(),
-                plugin=os.path.basename(plugin))
-
-        settings = None
-
-        if conf.NEUTRON_ENABLE:
-            settings = {
-                "net_provider": "neutron",
-                "net_segment_type": conf.NEUTRON_SEGMENT_TYPE
-            }
+        with self.env.d_env.get_admin_remote() as remote:
+            for plugin in [conf.ZABBIX_PLUGIN_PATH,
+                           conf.ZABBIX_SNMP_PLUGIN_PATH]:
+                checkers.upload_tarball(
+                    remote, plugin, "/var")
+                checkers.install_plugin_check_code(
+                    remote,
+                    plugin=os.path.basename(plugin))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=conf.DEPLOYMENT_MODE,
-            settings=settings
         )
 
         zabbix_username = 'admin'
@@ -373,27 +360,19 @@ class ZabbixPlugin(TestBasic):
         """
         self.env.revert_snapshot("ready_with_5_slaves")
 
-        for plugin in [conf.ZABBIX_PLUGIN_PATH,
-                       conf.ZABBIX_SNMP_PLUGIN_PATH,
-                       conf.ZABBIX_SNMP_EMC_PLUGIN_PATH]:
-            checkers.upload_tarball(
-                self.env.d_env.get_admin_remote(), plugin, "/var")
-            checkers.install_plugin_check_code(
-                self.env.d_env.get_admin_remote(),
-                plugin=os.path.basename(plugin))
-
-        settings = None
-
-        if conf.NEUTRON_ENABLE:
-            settings = {
-                "net_provider": "neutron",
-                "net_segment_type": conf.NEUTRON_SEGMENT_TYPE
-            }
+        with self.env.d_env.get_admin_remote() as remote:
+            for plugin in [conf.ZABBIX_PLUGIN_PATH,
+                           conf.ZABBIX_SNMP_PLUGIN_PATH,
+                           conf.ZABBIX_SNMP_EMC_PLUGIN_PATH]:
+                checkers.upload_tarball(
+                    remote, plugin, "/var")
+                checkers.install_plugin_check_code(
+                    remote,
+                    plugin=os.path.basename(plugin))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=conf.DEPLOYMENT_MODE,
-            settings=settings
         )
 
         zabbix_username = 'admin'
@@ -455,7 +434,7 @@ class ZabbixPlugin(TestBasic):
             7. Deploy the cluster
             8. Run network verification
             9. Run OSTF
-            10. Check Extreme Swich trigger with test SNMP message
+            10. Check Extreme Switch trigger with test SNMP message
 
         Duration 70m
         Snapshot deploy_zabbix_snmp_extreme_ha
@@ -463,27 +442,19 @@ class ZabbixPlugin(TestBasic):
         """
         self.env.revert_snapshot("ready_with_5_slaves")
 
-        for plugin in [conf.ZABBIX_PLUGIN_PATH,
-                       conf.ZABBIX_SNMP_PLUGIN_PATH,
-                       conf.ZABBIX_SNMP_EXTREME_PLUGIN_PATH]:
-            checkers.upload_tarball(
-                self.env.d_env.get_admin_remote(), plugin, "/var")
-            checkers.install_plugin_check_code(
-                self.env.d_env.get_admin_remote(),
-                plugin=os.path.basename(plugin))
-
-        settings = None
-
-        if conf.NEUTRON_ENABLE:
-            settings = {
-                "net_provider": "neutron",
-                "net_segment_type": conf.NEUTRON_SEGMENT_TYPE
-            }
+        with self.env.d_env.get_admin_remote() as remote:
+            for plugin in [conf.ZABBIX_PLUGIN_PATH,
+                           conf.ZABBIX_SNMP_PLUGIN_PATH,
+                           conf.ZABBIX_SNMP_EXTREME_PLUGIN_PATH]:
+                checkers.upload_tarball(
+                    remote, plugin, "/var")
+                checkers.install_plugin_check_code(
+                    remote,
+                    plugin=os.path.basename(plugin))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=conf.DEPLOYMENT_MODE,
-            settings=settings
         )
 
         zabbix_username = 'admin'
