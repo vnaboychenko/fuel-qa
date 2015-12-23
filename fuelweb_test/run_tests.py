@@ -87,6 +87,7 @@ def import_tests():
     from tests.plugins.plugin_reboot import test_plugin_reboot_task  # noqa
     from tests.plugins.plugin_vip_reservation import test_plugin_vip_reservation  # noqa
     from tests.plugins.plugin_zabbix import test_plugin_zabbix  # noqa
+    from tests.plugins.plugin_zabbix_and_lbaas import test_plugin_zabbix_and_lbaas  # noqa
     from tests import test_multiple_networks  # noqa
     from tests.gd_based_tests import test_neutron  # noqa
     from tests.gd_based_tests import test_neutron_vlan_ceph_mongo  # noqa
