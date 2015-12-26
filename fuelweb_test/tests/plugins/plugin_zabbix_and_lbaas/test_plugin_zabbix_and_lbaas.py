@@ -98,7 +98,7 @@ class ZabbixAndLbaasPlugins(TestBasic):
         logger.debug("LbaaS agent list is {0}".format(lb_agent))
 
         asserts.assert_equal(
-            len(lb_agent), 1,
+            len(lb_agent), 3,
             'There is not LbaaS agent in neutron agent list output')
 
     @classmethod
