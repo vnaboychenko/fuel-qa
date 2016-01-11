@@ -125,4 +125,4 @@ class PackageTempest(TestBasic):
                 remote.download(full_file_path, 'logs/')
 
 
-#        self.env.make_snapshot("deploy_package_tempest")
+        self.env.make_snapshot("deploy_package_tempest")
