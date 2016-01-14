@@ -94,11 +94,11 @@ class PackageTempest(TestBasic):
 
         with self.env.d_env.get_admin_remote() as remote:
             test_suite = "[7.0][MOSQA] Automated Cloud Testing"
-            mos_repository = "https://github.com/Mirantis/"
-            tests_folder = "mos-tempest-runner"
+            mos_repository = "https://review.ci-cd-aut.local/"
+            tests_folder = "ci-mos-tempest-runner"
             branch = "stable/7.0"
             prepeare_cmd = ("export TESTRAIL_SUITE='{0}' &&"
-                   "yum install git -y && git clone {1}{2} -b {3} &&"
+                   "yum install git -y && GIT_SSL_NO_VERIFY=true git clone {1}{2} -b {3} &&"
                    "cd {2} && ./setup_env.sh".format(test_suite, mos_repository, tests_folder, branch))
 
             logger.info("Run Tempest installation")
