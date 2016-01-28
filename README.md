@@ -1,6 +1,8 @@
 Tests documentation
 -------------------
 
+Version 1
+
 [Devops documentation](http://docs.fuel-infra.org/fuel-dev/devops.html)
 
 Code-generated documentation
