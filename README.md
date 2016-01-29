@@ -1,7 +1,7 @@
 Tests documentation
 -------------------
 
-Version 2
+Version 3
 
 [Devops documentation](http://docs.fuel-infra.org/fuel-dev/devops.html)
 
