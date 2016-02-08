@@ -49,6 +49,7 @@ def import_tests():
     from tests import test_neutron_public  # noqa
     from tests import test_neutron_tun  # noqa
     from tests import test_package_tempest  # tempest
+    from tests import test_package_rally  # rally
     from tests import test_pullrequest  # noqa
     from tests import test_services  # noqa
     from tests import test_ha_one_controller  # noqa
