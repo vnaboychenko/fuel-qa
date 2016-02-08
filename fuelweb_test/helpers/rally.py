@@ -47,11 +47,36 @@ class RallyEngine(object):
         existing_images = [line.strip().split() for line in result['stdout']]
         return [self.container_repo, tag] in existing_images
 
-    def pull_image(self):
-        # TODO(apanchenko): add possibility to load image from local path or
-        # remote link provided in settings, in order to speed up downloading
-        cmd = 'docker pull {0}'.format(self.container_repo)
-        logger.debug('Downloading Rally repository/image from registry...')
+    def prepare_utils_for_master(self):
+        cmd = "which sshpass"
+        result = self.admin_remote.execute(cmd)
+        if result['exit_code'] != 0:
+            # install sshpass on master node for passing password to scp
+            sshpass_address = "http://dl.fedoraproject.org/pub/epel/6/x86_64"
+            sshpass_package = "sshpass-1.05-1.el6.x86_64.rpm"
+            cmd = "wget {0}/{1} && rpm -ivh {1} && which sshpass".format(
+                sshpass_address, sshpass_package)
+            result = self.admin_remote.execute(cmd)
+            assert_equal(result['exit_code'], 0, 'Failed to install sshpass: '
+                                                 'Error {0}'.format(result))
+        else:
+            logger.debug("Sshpass is already installed.")
+
+    def download_image(self):
+        self.prepare_utils_for_master()
+
+        # download image from cd-node vi scp
+        remote_address = '172.18.167.70'
+        user = 'test'
+        password = 'testci123'
+        logger.debug("Downloading Rally image"
+                     " from CD node, address {}".format(remote_address))
+        cmd = "sshpass -p {0} scp {1}@{2}:/home/test/rally.img /root".format(
+            password, user, remote_address)
+        self.admin_remote.execute(cmd)
+
+        # load image to docker images
+        cmd = 'docker load -i rally.img'
         result = self.admin_remote.execute(cmd)
         logger.debug(result)
         return self.image_exists()
@@ -62,8 +87,9 @@ class RallyEngine(object):
         if in_background:
             options = '{0} -d'.format(options)
         cmd = ("docker run {options} --user {user_id} --net=\"host\"  -e "
-               "\"http_proxy={proxy_url}\" -v {dir_for_home}:{home_bind_path} "
-               "{container_repo}:{tag} /bin/bash -c '{command}'".format(
+               "\"http_proxy={proxy_url}\" -e \"https_proxy={proxy_url}\" "
+	       "-v {dir_for_home}:{home_bind_path} {container_repo}:{tag} "
+	       "/bin/bash -c '{command}'".format(
                    options=options,
                    user_id=self.user_id,
                    proxy_url=self.proxy_url,
@@ -80,7 +106,7 @@ class RallyEngine(object):
 
     def setup_utils(self):
         utils = ['gawk', 'vim', 'curl']
-        cmd = ('unset http_proxy; apt-get update; '
+        cmd = ('unset http_proxy https_proxy; apt-get update; '
                'apt-get install -y {0}'.format(' '.join(utils)))
         logger.debug('Installing utils "{0}" to the Rally container...'.format(
             utils))
@@ -149,7 +175,7 @@ class RallyEngine(object):
 
     def setup(self):
         if not self.image_exists():
-            assert_true(self.pull_image(),
+            assert_true(self.download_image(),
                         "Docker image for Rally not found!")
         if not self.image_exists(tag='ready'):
             assert_true(self.prepare_image(),
@@ -236,12 +262,13 @@ class RallyDeployment(object):
     def create_deployment(self):
         if self.is_deployment_exist:
             return
-        cmd = ('export OS_USERNAME={0} OS_PASSWORD={1} OS_TENANT_NAME={2} '
-               'OS_AUTH_URL="{3}"; rally deployment create --name "{4}"'
-               ' --fromenv').format(self.username, self.password,
-                                    self.tenant_name, self.auth_url,
-                                    self.cluster_vip)
-        result = self.rally_engine.run_container_command(cmd)
+        cmd = ('rally deployment create --name "{0}" --filename '
+	       '<(echo \'{{ "admin": {{ "password": "{1}", "tenant_name": "{2}'
+               '", "username": "{3}" }}, "auth_url": "{4}", "endpoint": null, '
+	       '"type": "ExistingCloud", "https_insecure": true }}\')').format(
+	    self.cluster_vip, self.password, self.tenant_name, self.username,
+            self.auth_url)
+	result = self.rally_engine.run_container_command(cmd)
         assert_true(self.is_deployment_exist,
                     'Rally deployment creation failed: {0}'.format(result))
         logger.debug('Rally deployment created: {0}'.format(result))
@@ -308,6 +335,16 @@ class RallyTask(object):
             result = self.engine.run_container_command(cmd)
             assert_equal(result['exit_code'], 0,
                          "Getting task results failed: {0}".format(result))
+            logger.debug("Rally task {0} result: {1}".format(self.uuid,
+                                                             result))
+            return ''.join(result['stdout'])
+
+    def gen_html_report(self):
+	if self.status == 'finished':
+            cmd = 'rally task report {0} --out rally_report.html'.format(self.uuid)
+            result = self.engine.run_container_command(cmd)
+            assert_equal(result['exit_code'], 0,
+                         "Generating HTML report failed: {0}".format(result))
             logger.debug("Rally task {0} result: {1}".format(self.uuid,
                                                              result))
             return ''.join(result['stdout'])
@@ -410,4 +447,5 @@ class RallyBenchmarkTest(object):
                      '{0}'.format(self.current_task.status))
         wait(lambda: self.current_task.status == 'finished', timeout=timeout)
         logger.info('Rally benchmark test is finished.')
-        return RallyResult(json_results=self.current_task.get_results())
+        self.current_task.gen_html_report()
+	return RallyResult(json_results=self.current_task.get_results())
