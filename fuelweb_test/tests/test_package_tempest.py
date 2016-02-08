@@ -92,50 +92,39 @@ class PackageTempest(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
-        # Run Rally benchmark
-        rally_benchmarks = {}
-        benchmark_results = {}
-        for tag in set(settings.RALLY_TAGS):
-            rally_benchmarks[tag] = RallyBenchmarkTest(
-                container_repo=settings.RALLY_DOCKER_REPO,
-                environment=self.env,
-                cluster_id=cluster_id,
-                test_type=tag
-            )
-            benchmark_results[tag] = rally_benchmarks[tag].run()
-            logger.debug(benchmark_results[tag].show())
 
-#        with self.env.d_env.get_admin_remote() as remote:
-#            test_suite = "[7.0][MOSQA] Automated Cloud Testing"
-#            mos_repository = "https://review.ci-cd-aut.local/"
-#            tests_folder = "ci-mos-tempest-runner"
-#            branch = "stable/7.0"
-#            prepeare_cmd = ("export TESTRAIL_SUITE='{0}' &&"
-#                   "yum install git -y && GIT_SSL_NO_VERIFY=true git clone {1}{2} -b {3} &&"
-#                   "cd {2} && ./setup_env.sh".format(test_suite, mos_repository, tests_folder, branch))
-#
-#            logger.info("Run Tempest installation")
-#            prepeare_result = remote.execute(prepeare_cmd)
-#
-#            for line in prepeare_result['stdout']:
-#                logger.info(line)
-#
-#            logger.info("Run Tempest tests")
-#            run_tempest_cmd = ("source /home/developer/mos-tempest-runner/.venv/bin/activate; source /home/developer/openrc; run_tests")
-#            run_tempest_result = remote.execute(run_tempest_cmd)
-#
-#            # Tempest test reports store in stderr Array
-#            for line in run_tempest_result['stderr']:
-#                logger.info(line)
-#
-#            fuel_log_directory='/home/developer/mos-tempest-runner/tempest-reports/'
-#            list_of_files = remote.execute('ls {0}'.format(fuel_log_directory))['stdout']
-#
-#            for file in list_of_files:
-#                file = file.replace('\n', '')
-#                full_file_path = fuel_log_directory + file
-#                logger.info('Copying file ' + file )
-#                remote.download(full_file_path, 'logs/')
+
+        with self.env.d_env.get_admin_remote() as remote:
+            test_suite = "[7.0][MOSQA] Automated Cloud Testing"
+            mos_repository = "https://review.ci-cd-aut.local/"
+            tests_folder = "ci-mos-tempest-runner"
+            branch = "stable/7.0"
+            prepeare_cmd = ("export TESTRAIL_SUITE='{0}' &&"
+                   "yum install git -y && GIT_SSL_NO_VERIFY=true git clone {1}{2} -b {3} &&"
+                   "cd {2} && ./setup_env.sh".format(test_suite, mos_repository, tests_folder, branch))
+
+            logger.info("Run Tempest installation")
+            prepeare_result = remote.execute(prepeare_cmd)
+
+            for line in prepeare_result['stdout']:
+                logger.info(line)
+
+            logger.info("Run Tempest tests")
+            run_tempest_cmd = ("source /home/developer/mos-tempest-runner/.venv/bin/activate; source /home/developer/openrc; run_tests")
+            run_tempest_result = remote.execute(run_tempest_cmd)
+
+            # Tempest test reports store in stderr Array
+            for line in run_tempest_result['stderr']:
+                logger.info(line)
+
+            fuel_log_directory='/home/developer/mos-tempest-runner/tempest-reports/'
+            list_of_files = remote.execute('ls {0}'.format(fuel_log_directory))['stdout']
+
+            for file in list_of_files:
+                file = file.replace('\n', '')
+                full_file_path = fuel_log_directory + file
+                logger.info('Copying file ' + file )
+                remote.download(full_file_path, 'logs/')
 
 
         self.env.make_snapshot("deploy_package_tempest")
