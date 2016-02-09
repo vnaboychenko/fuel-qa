@@ -1,0 +1,63 @@
+{% set flavor_name = flavor_name or "m1.tiny" %}
+{
+    "NovaServers.boot_and_delete_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                },
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 30,
+                "concurrency": 3
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaServers.boot_and_associate_floating_ip": [
+    {
+      "runner": {
+        "type": "constant",
+        "concurrency": 1,
+        "times": 3
+      },
+      "args": {
+        "flavor": {
+          "name": "{{flavor_name}}"
+        },
+        "image": {
+          "name": "TestVM"
+        }
+      },
+      "context": {
+        "users": {
+          "users_per_tenant": 1,
+          "tenants": 1
+        },
+        "network": {}
+      }
+    }
+  ],
+  "KeystoneBasic.create_delete_user": [
+        {
+            "args": {},
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            }
+        }
+    ]
+
+}
+
