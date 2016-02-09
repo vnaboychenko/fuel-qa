@@ -340,13 +340,27 @@ class RallyTask(object):
             return ''.join(result['stdout'])
 
     def gen_html_report(self):
-	if self.status == 'finished':
-            cmd = 'rally task report {0} --out rally_report.html'.format(self.uuid)
+        if self.status == 'finished':
+            report_file = "rally_report.html"
+            cmd = 'rally task report {0} --out {1}'.format(
+                self.uuid, report_file)
             result = self.engine.run_container_command(cmd)
             assert_equal(result['exit_code'], 0,
                          "Generating HTML report failed: {0}".format(result))
-            logger.debug("Rally task {0} result: {1}".format(self.uuid,
-                                                             result))
+            logger.info("Rally task {0} HTML report is generated: {1}".
+                        format(self.uuid, report_file))
+            return ''.join(result['stdout'])
+
+    def gen_junit_report(self):
+        if self.status == 'finished':
+            report_file = "JUint_report.xml"
+            cmd = 'rally task report {0} --junit --out {1}'.\
+                format(self.uuid, report_file)
+            result = self.engine.run_container_command(cmd)
+            assert_equal(result['exit_code'], 0,
+                         "Generating JUnit report failed: {0}".format(result))
+            logger.info("Rally task {0} JUnit report is generated: {1}".
+                        format(self.uuid, report_file))
             return ''.join(result['stdout'])
 
 
@@ -448,4 +462,5 @@ class RallyBenchmarkTest(object):
         wait(lambda: self.current_task.status == 'finished', timeout=timeout)
         logger.info('Rally benchmark test is finished.')
         self.current_task.gen_html_report()
+	self.current_task.gen_junit_report()
 	return RallyResult(json_results=self.current_task.get_results())
