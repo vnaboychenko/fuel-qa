@@ -88,7 +88,6 @@ class PackageRally(TestBasic):
 
         # Run Rally benchmark
         rally_benchmarks = {}
-        benchmark_results = {}
         for tag in set(settings.RALLY_TAGS):
             rally_benchmarks[tag] = RallyBenchmarkTest(
                 container_repo=settings.RALLY_DOCKER_REPO,
@@ -97,8 +96,7 @@ class PackageRally(TestBasic):
                 test_type=tag
             )
             logger.info("Run Rally benchmark for tag: {0}".format(tag))
-            benchmark_results[tag] = rally_benchmarks[tag].run()
-            logger.debug(benchmark_results[tag].show())
+            rally_benchmarks[tag].run()
 
 	# Copy files from rally container directory
         remote = self.env.d_env.get_admin_remote()
