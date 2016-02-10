@@ -72,7 +72,7 @@ class RallyEngine(object):
         password = settings.RALLY_IMG_ADDRESS_CREDS[1]
         logger.debug("Downloading Rally image"
                      " from CD node, address {}".format(remote_address))
-        cmd = "sshpass -p {0} scp {1}@{2}:/home/test/rally.img /root".format(
+        cmd = "sshpass -p {0} scp {1}@{2}:rally.img /root".format(
             password, user, remote_address)
         self.admin_remote.execute(cmd)
 
@@ -343,7 +343,7 @@ class RallyTask(object):
     def gen_html_report(self):
         if self.status == 'finished':
             report_file = "rally_report-{0}.html".format(self.test_type)
-	    cmd = 'rally task report {0} --out {1}'.format(
+            cmd = 'rally task report {0} --out {1}'.format(
                 self.uuid, report_file)
             result = self.engine.run_container_command(cmd)
             assert_equal(result['exit_code'], 0,
@@ -355,7 +355,7 @@ class RallyTask(object):
     def gen_junit_report(self):
         if self.status == 'finished':
             report_file = "JUint_report-{0}.xml".format(self.test_type)
-	    cmd = 'rally task report {0} --junit --out {1}'.\
+            cmd = 'rally task report {0} --junit --out {1}'.\
                 format(self.uuid, report_file)
             result = self.engine.run_container_command(cmd)
             assert_equal(result['exit_code'], 0,
@@ -463,5 +463,5 @@ class RallyBenchmarkTest(object):
         wait(lambda: self.current_task.status == 'finished', timeout=timeout)
         logger.info('Rally benchmark test is finished.')
         self.current_task.gen_html_report()
-	self.current_task.gen_junit_report()
+        self.current_task.gen_junit_report()
 

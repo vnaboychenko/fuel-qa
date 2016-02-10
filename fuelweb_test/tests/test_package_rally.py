@@ -98,7 +98,7 @@ class PackageRally(TestBasic):
             logger.info("Run Rally benchmark for tag: {0}".format(tag))
             rally_benchmarks[tag].run()
 
-	# Copy files from rally container directory
+        # Copy files from rally container directory
         remote = self.env.d_env.get_admin_remote()
         rally_directory = '/var/rally-{0}/'.format(cluster_id)
         list_of_files = remote.execute('ls {0}'.format(rally_directory))['stdout']
