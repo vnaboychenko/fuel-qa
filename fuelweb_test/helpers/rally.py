@@ -20,6 +20,7 @@ from proboscis.asserts import assert_true
 
 from devops.helpers.helpers import wait
 from fuelweb_test import logger
+from fuelweb_test import settings
 
 
 class RallyEngine(object):
@@ -66,9 +67,9 @@ class RallyEngine(object):
         self.prepare_utils_for_master()
 
         # download image from cd-node vi scp
-        remote_address = '172.18.167.70'
-        user = 'test'
-        password = 'testci123'
+        remote_address = settings.RALLY_IMG_ADDRESS
+        user = settings.RALLY_IMG_ADDRESS_CREDS[0]
+        password = settings.RALLY_IMG_ADDRESS_CREDS[1]
         logger.debug("Downloading Rally image"
                      " from CD node, address {}".format(remote_address))
         cmd = "sshpass -p {0} scp {1}@{2}:/home/test/rally.img /root".format(
