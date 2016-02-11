@@ -1,5 +1,28 @@
 {% set flavor_name = flavor_name or "m1.tiny" %}
 {
+    "NovaServers.boot_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                }
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
     "NovaServers.boot_and_delete_server": [
         {
             "args": {
@@ -48,7 +71,310 @@
       }
     }
   ],
-  "KeystoneBasic.create_delete_user": [
+    "NovaServers.boot_and_delete_multiple_servers": [
+    {
+      "runner": {
+        "type": "constant",
+        "concurrency": 1,
+        "times": 1
+      },
+      "args": {
+        "count": 5,
+        "image": {
+          "name": "TestVM"
+        },
+        "flavor": {
+          "name": "{{flavor_name}}"
+        }
+      },
+      "context": {
+        "users": {
+          "users_per_tenant": 1,
+          "tenants": 1
+        }
+      }
+    }
+  ],
+    "NovaKeypair.boot_and_delete_server_with_keypair": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                }
+            },
+            "runner": {
+                "type": "constant",
+                "times": 5,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 2,
+                    "users_per_tenant": 1
+                },
+                "network": {
+                    "start_cidr": "100.1.0.0/26"
+                }
+            }
+        }
+    ],
+    "NovaServers.boot_and_rebuild_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "from_image": {
+                    "name": "TestVM"
+                },
+                "to_image": {
+                    "name": "TestVM"
+                }
+            },
+            "runner": {
+                "type": "constant",
+                "times": 5,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 1,
+                    "users_per_tenant": 1
+                }
+            }
+        }
+    ],
+    "NovaServers.boot_server_from_volume_and_delete": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                },
+                "volume_size": 10,
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaServers.snapshot_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                },
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaKeypair.create_and_delete_keypair": [
+        {
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaSecGroup.create_and_delete_secgroups": [
+        {
+            "args": {
+                "security_group_count": 3,
+                "rules_per_security_group": 3
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaHypervisors.list_hypervisors": [
+    {
+      "runner": {
+        "type": "constant",
+        "concurrency": 2,
+        "times": 10
+      },
+      "args": {
+        "detailed": true
+      }
+    }
+    ],
+    "NovaImages.list_images": [
+    {
+      "runner": {
+        "type": "constant",
+        "concurrency": 2,
+        "times": 10
+      },
+      "args": {
+        "detailed": true
+      },
+      "context": {
+        "users": {
+          "tenants": 3,
+          "users_per_tenant": 2
+        }
+      }
+    }
+    ],
+    "NovaServers.list_servers": [
+        {
+            "args": {
+                "detailed": true
+            },
+            "runner": {
+                "type": "constant",
+                "times": 1,
+                "concurrency": 1
+            },
+            "context": {
+                "users": {
+                    "tenants": 1,
+                    "users_per_tenant": 1
+                },
+                "servers": {
+                    "flavor": {
+                        "name": "{{flavor_name}}"
+                    },
+                    "image": {
+                        "name": "TestVM"
+                    },
+                    "servers_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaServers.pause_and_unpause_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                },
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "NovaServers.suspend_and_resume_server": [
+        {
+            "args": {
+                "flavor": {
+                    "name": "{{flavor_name}}"
+                },
+                "image": {
+                    "name": "TestVM"
+                },
+                "force_delete": false
+            },
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 2
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "KeystoneBasic.add_and_remove_user_role": [
+    {
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            },
+            "context": {
+                "users": {
+                    "tenants": 3,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "KeystoneBasic.create_and_delete_ec2credential": [
+        {
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 5
+            },
+            "context": {
+                "users": {
+                    "tenants": 2,
+                    "users_per_tenant": 2
+                }
+            }
+        }
+    ],
+    "KeystoneBasic.create_and_delete_role": [
+    {
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            }
+        }
+    ],
+    "KeystoneBasic.create_delete_user": [
         {
             "args": {},
             "runner": {
@@ -57,7 +383,45 @@
                 "concurrency": 10
             }
         }
+    ],
+    "KeystoneBasic.create_and_list_tenants": [
+        {
+            "args": {},
+            "runner": {
+                "type": "constant",
+                "times": 10,
+                "concurrency": 1
+            }
+        }
+    ],
+    "KeystoneBasic.create_update_and_delete_tenant": [
+    {
+            "args": {},
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            }
+        }
+    ],
+    "KeystoneBasic.create_user_update_password": [
+        {
+            "args": {},
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            }
+        }
+    ],
+    "KeystoneBasic.get_entities": [
+    {
+            "runner": {
+                "type": "constant",
+                "times": 100,
+                "concurrency": 10
+            }
+        }
     ]
-
 }
 

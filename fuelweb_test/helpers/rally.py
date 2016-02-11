@@ -453,7 +453,7 @@ class RallyBenchmarkTest(object):
         )
         self.current_task = None
 
-    def run(self, timeout=60 * 10):
+    def run(self, timeout=78 * 1000):
         self.current_task = RallyTask(self.deployment, self.test_type)
         logger.info('Starting Rally benchmark test...')
         self.current_task.start()
