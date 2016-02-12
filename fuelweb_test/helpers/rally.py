@@ -303,7 +303,7 @@ class RallyTask(object):
         return self._status
 
     def prepare_scenario(self):
-        scenario_file = '{0}/fuelweb_test/rally/screnarios/{1}.json'.format(
+        scenario_file = '{0}/fuelweb_test/rally/scenarios/{1}.json'.format(
             os.environ.get("WORKSPACE", "./"), self.test_type)
         remote_path = '{0}/{1}.json'.format(self.engine.dir_for_home,
                                             self.test_type)
@@ -453,7 +453,7 @@ class RallyBenchmarkTest(object):
         )
         self.current_task = None
 
-    def run(self, timeout=78 * 1000):
+    def run(self, timeout=78000):
         self.current_task = RallyTask(self.deployment, self.test_type)
         logger.info('Starting Rally benchmark test...')
         self.current_task.start()
