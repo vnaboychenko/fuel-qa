@@ -498,10 +498,9 @@ ALWAYS_CREATE_DIAGNOSTIC_SNAPSHOT = get_var_as_bool(
 RALLY_DOCKER_REPO = os.environ.get('RALLY_DOCKER_REPO', 'rallyforge/rally')
 RALLY_CONTAINER_NAME = os.environ.get('RALLY_CONTAINER_NAME', 'rally')
 RALLY_TAGS = os.environ.get('RALLY_TAGS', 'all').split(',')
-# IP address and ssh credentials for the node to download rally.img via scp
+# Mirror http address to download rally.img, e.g. 'http://mirror.ci-cd-aut.local'
 # Explanation: on MOS 7.0 we cannot make 'docker pull rallyforge/rally'
-RALLY_IMG_ADDRESS = os.environ.get('RALLY_IMG_ADDRESS', "")
-RALLY_IMG_ADDRESS_CREDS = os.environ.get('RALLY_IMG_ADDRESS_CREDS', "").split('/')
+MIRROR_ADDRESS = os.environ.get('MIRROR_ADDRESS', "")
 
 REGENERATE_ENV_IMAGE = get_var_as_bool('REGENERATE_ENV_IMAGE', False)
 LATE_ARTIFACTS_JOB_URL = os.environ.get("LATE_ARTIFACTS_JOB_URL", '')

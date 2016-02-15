@@ -48,32 +48,13 @@ class RallyEngine(object):
         existing_images = [line.strip().split() for line in result['stdout']]
         return [self.container_repo, tag] in existing_images
 
-    def prepare_utils_for_master(self):
-        cmd = "which sshpass"
-        result = self.admin_remote.execute(cmd)
-        if result['exit_code'] != 0:
-            # install sshpass on master node for passing password to scp
-            sshpass_address = "http://dl.fedoraproject.org/pub/epel/6/x86_64"
-            sshpass_package = "sshpass-1.05-1.el6.x86_64.rpm"
-            cmd = "wget {0}/{1} && rpm -ivh {1} && which sshpass".format(
-                sshpass_address, sshpass_package)
-            result = self.admin_remote.execute(cmd)
-            assert_equal(result['exit_code'], 0, 'Failed to install sshpass: '
-                                                 'Error {0}'.format(result))
-        else:
-            logger.debug("Sshpass is already installed.")
-
     def download_image(self):
-        self.prepare_utils_for_master()
-
-        # download image from cd-node vi scp
-        remote_address = settings.RALLY_IMG_ADDRESS
-        user = settings.RALLY_IMG_ADDRESS_CREDS[0]
-        password = settings.RALLY_IMG_ADDRESS_CREDS[1]
+        # download image from mirror via wget
+        remote_address = settings.MIRROR_ADDRESS
         logger.debug("Downloading Rally image"
-                     " from CD node, address {}".format(remote_address))
-        cmd = "sshpass -p {0} scp {1}@{2}:rally.img /root".format(
-            password, user, remote_address)
+                     " from a mirror, address {}/rally.img".format(remote_address))
+	remote_address = remote_address[0:-1] if remote_address[-1] == '/' else remote_address
+        cmd = "wget {}/rally.img".format(remote_address)
         self.admin_remote.execute(cmd)
 
         # load image to docker images
