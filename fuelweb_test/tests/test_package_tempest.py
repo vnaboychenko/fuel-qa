@@ -108,7 +108,7 @@ class PackageTempest(TestBasic):
                 logger.info(line)
 
             logger.info("Run Tempest tests")
-            run_tempest_cmd = ("source /home/developer/mos-tempest-runner/.venv/bin/activate; source /home/developer/openrc; run_tests")
+            run_tempest_cmd = ("source /home/developer/mos-tempest-runner/.venv/bin/activate && pip install -U oslo.config && source /home/developer/openrc && run_tests")
             run_tempest_result = remote.execute(run_tempest_cmd)
 
             # Tempest test reports store in stderr Array
