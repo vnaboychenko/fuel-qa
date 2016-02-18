@@ -99,6 +99,18 @@ class TestLdapPlugin(TestBasic):
             "url": {
                 "value": conf.LDAP_URL
             },
+            "user": {
+                "value": conf.LDAP_USER
+            },
+            "query_scope": {
+                "value": conf.LDAP_QUERY_SCOPE
+            },
+            "user_tree_dn": {
+                "value": conf.LDAP_USERS_TREE_DN
+            },
+            "group_tree_dn": {
+                "value": conf.LDAP_GROUPS_TREE_DN
+            },
             "password": {
                     "value": conf.LDAP_USER_PASSWORD
                 },
@@ -106,10 +118,11 @@ class TestLdapPlugin(TestBasic):
                 "value": conf.LDAP_SUFFIX
             }
         }
+
         self.fuel_web.update_plugin_data(cluster_id, plugin_name, data)
 
-        # self.fuel_web.deploy_cluster_wait(cluster_id)
-        #
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
         # logger.info("Run OSTF...")
         # self.fuel_web.run_ostf(cluster_id=cluster_id)
         #
