@@ -121,6 +121,9 @@ class TestLdapPlugin(TestBasic):
 
         self.fuel_web.update_plugin_data(cluster_id, plugin_name, data)
 
+        options = {'metadata/enabled': True}
+        self.fuel_web.update_plugin_data(cluster_id, plugin_name, options)
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         # logger.info("Run OSTF...")
