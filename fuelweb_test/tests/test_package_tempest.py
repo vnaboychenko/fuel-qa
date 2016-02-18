@@ -27,7 +27,7 @@ from fuelweb_test.tests.base_test_case import TestBasic
 from fuelweb_test.tests.test_neutron_tun_base import NeutronTunHaBase
 from fuelweb_test import logger
 from fuelweb_test import quiet_logger
-
+from fuelweb_test.tests.base_test_tempest import TempestTestBase
 
 
 @test(groups=["package_tempest"])
@@ -90,39 +90,12 @@ class PackageTempest(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
-
-
-        with self.env.d_env.get_admin_remote() as remote:
-            test_suite = "[7.0][MOSQA] Automated Cloud Testing"
-            mos_repository = "https://github.com/Mirantis/"
-            tests_folder = "mos-tempest-runner"
-            branch = "stable/7.0"
-            prepeare_cmd = ("export TESTRAIL_SUITE='{0}' &&"
-                   "yum install git -y && git clone {1}{2} -b {3} &&"
-                   "cd {2} && ./setup_env.sh".format(test_suite, mos_repository, tests_folder, branch))
-
-            logger.info("Run Tempest installation")
-            prepeare_result = remote.execute(prepeare_cmd)
-
-            for line in prepeare_result['stdout']:
-                logger.info(line)
-
-            logger.info("Run Tempest tests")
-            run_tempest_cmd = ("source /home/developer/mos-tempest-runner/.venv/bin/activate && pip install -U oslo.config && source /home/developer/openrc && run_tests")
-            run_tempest_result = remote.execute(run_tempest_cmd)
-
-            # Tempest test reports store in stderr Array
-            for line in run_tempest_result['stderr']:
-                logger.info(line)
-
-            fuel_log_directory='/home/developer/mos-tempest-runner/tempest-reports/'
-            list_of_files = remote.execute('ls {0}'.format(fuel_log_directory))['stdout']
-
-            for file in list_of_files:
-                file = file.replace('\n', '')
-                full_file_path = fuel_log_directory + file
-                logger.info('Copying file ' + file )
-                remote.download(full_file_path, 'logs/')
-
+        # Install and run all tempest tests
+        # To run special tests, run:
+        # tempest.run_tempest(test_suite="tempest.api.identity") etc
+        tempest = TempestTestBase()
+        tempest.install_tempest()
+        tempest.run_tempest()
 
         self.env.make_snapshot("deploy_package_tempest")
+
