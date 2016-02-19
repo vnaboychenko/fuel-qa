@@ -27,9 +27,10 @@ from fuelweb_test.settings import LBAAS_PLUGIN_PATH
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
+from fuelweb_test import settings as conf
 
 
-@test(enabled=False, groups=["plugins"])
+@test(enabled=True, groups=["plugins"])
 class LbaasPlugin(TestBasic):
     """LbaasPlugin."""  # TODO documentation
 
@@ -117,19 +118,23 @@ class LbaasPlugin(TestBasic):
 
         checkers.upload_tarball(
             self.env.d_env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
-
+        
+        logger.info('plugin_uploaded')
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(LBAAS_PLUGIN_PATH))
 
+        logger.info('plugin_installed')
+
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=conf.DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
-                "net_segment_type": NEUTRON_SEGMENT_TYPE,
+                "net_segment_type": conf.NEUTRON_SEGMENT_TYPE,
             }
         )
 
