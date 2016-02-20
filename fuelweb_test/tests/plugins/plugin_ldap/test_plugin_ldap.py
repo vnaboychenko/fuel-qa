@@ -116,6 +116,12 @@ class TestLdapPlugin(TestBasic):
                 },
             "suffix": {
                 "value": conf.LDAP_SUFFIX
+            },
+            "user_objectclass": {
+                "value": conf.LDAP_USER_OBJECT_CLASS
+            },
+            "user_name_attribute": {
+                "value": conf.LDAP_USER_NAME_ATTRIBUTE
             }
         }
 
