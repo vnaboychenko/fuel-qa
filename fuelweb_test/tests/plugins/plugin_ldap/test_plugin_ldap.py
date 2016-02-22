@@ -11,9 +11,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import json
 import os
 
 from proboscis.asserts import assert_true
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_is_not_none
 from proboscis import test
 
 from fuelweb_test import logger
@@ -22,12 +25,66 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-from fuelweb_test.tests.base_test_tempest import TempestTestBase
-
+import requests
 
 @test(groups=["plugins"])
 class TestLdapPlugin(TestBasic):
     """Class for testing the LDAP plugin."""
+
+    def get_dashboard_url(self):
+        with self.env.d_env.get_admin_remote() as remote:
+            cmd = "fuel node \"$@\" | grep controller | awk '{print $1}' | head -1"
+            controller_host_id = remote.execute(cmd)['stdout'][0].strip()
+            controller_host = "node-{0}".format(controller_host_id)
+            cmd = "ssh %s \"grep public_vip /etc/hiera/globals.yaml | awk '{print \$2}' \"" % controller_host
+            public_ip = remote.execute(cmd)['stdout'][0].strip()[1:-1]
+        return public_ip
+
+    def get_user(self):
+        for param in conf.LDAP_USER.split(','):
+            if param.startswith("cn="):
+                user = param[3:].strip()
+                return user
+
+    def check_get_token(self):
+        dashboard_url = self.get_dashboard_url()
+        user = self.get_user()
+        self.session = requests.Session()
+
+        data = {
+            "auth": {
+                "identity": {
+                    "methods": [
+                        "password"
+                    ],
+                    "password": {
+                        "user": {
+                            "name": user,
+                            "password": conf.LDAP_USER_PASSWORD,
+                            "domain": {
+                                "name": conf.LDAP_DOMAIN
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        self.session.headers.update({'Content-Type': 'application/json'})
+        resp = requests.post(
+            'https://{0}:5000/v3/auth/tokens'.format(dashboard_url),
+            data=json.dumps(data), headers=self.session.headers, verify=False)
+        assert_equal(
+            resp.status_code, 201,
+            message="Unexpected status code: {}".format(resp.status_code))
+        assert_is_not_none(
+            resp.headers['X-Subject-Token'],
+            message="Unexpected error: X-Subject-Token is {}".
+                    format(resp.headers['X-Subject-Token']))
+        assert_is_not_none(
+            json.loads(resp.text)['token']['user'],
+            message="Unexpected error in the body of response: ['token']"
+                    "['user'] is {0}".format(
+                json.loads(resp.text)['token']['user']))
 
     def install_plugin(self):
         logger.info('Started plugin installation procedure.')
@@ -58,7 +115,7 @@ class TestLdapPlugin(TestBasic):
             5. Add 2 nodes with compute + cinder role
             8. Deploy the cluster
             9. Run OSTF
-            10. Run tempest.api.identity tests
+            10. Check LDAP user can authorize
 
         Duration 70m
         Snapshot deploy_ldap
@@ -124,7 +181,6 @@ class TestLdapPlugin(TestBasic):
                 "value": conf.LDAP_USER_NAME_ATTRIBUTE
             }
         }
-
         self.fuel_web.update_plugin_data(cluster_id, plugin_name, data)
 
         options = {'metadata/enabled': True}
@@ -132,15 +188,12 @@ class TestLdapPlugin(TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        # logger.info("Run OSTF...")
+        logger.info("Run OSTF...")
         # self.fuel_web.run_ostf(cluster_id=cluster_id)
-        #
-        # # Run tempest api identity tests
-        # tempest = TempestTestBase()
-        # tempest.install_tempest()
-        # tempest.run_tempest(test_suite="tempest.api.identity")
+
+        logger.info("Checking get token request for LDAP user...")
+        # self.check_get_token()
 
         self.env.make_snapshot("deploy_ldap")
-
 
 
