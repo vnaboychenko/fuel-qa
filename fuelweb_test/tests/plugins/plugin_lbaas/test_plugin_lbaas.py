@@ -162,8 +162,7 @@ class LbaasPlugin(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        os_conn = os_actions.OpenStackActions(controller['ip'])
+        os_conn = os_actions.OpenStackActions(public_vip)
 
         self.check_neutron_agents_statuses(os_conn)
 
