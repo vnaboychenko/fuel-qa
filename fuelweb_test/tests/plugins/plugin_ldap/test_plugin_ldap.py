@@ -188,11 +188,11 @@ class TestLdapPlugin(TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        logger.info("Run OSTF...")
-        # self.fuel_web.run_ostf(cluster_id=cluster_id)
+        logger.info("Running OSTF tests...")
+        fuel_web.run_ostf(cluster_id=cluster_id,test_sets=['smoke', 'sanity', 'ha', 'cloudvalidation', 'tests_platform'])
 
         logger.info("Checking get token request for LDAP user...")
-        # self.check_get_token()
+        self.check_get_token()
 
         self.env.make_snapshot("deploy_ldap")
 
