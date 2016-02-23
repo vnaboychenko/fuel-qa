@@ -162,6 +162,8 @@ class LbaasPlugin(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
+        public_vip = self.fuel_web.get_public_vip(cluster_id)
+
         os_conn = os_actions.OpenStackActions(public_vip)
 
         self.check_neutron_agents_statuses(os_conn)
